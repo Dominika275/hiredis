@@ -5,17 +5,15 @@ pipeline {
         stage('1. Build') {
             steps {
                 echo 'Budowanie obrazu Builder (GCC 13)...'
-
-                sh 'docker build -t hiredis-builder -f Dockerfile.build .'
-            }
+                
+                sh 'docker build -t hiredis-builder -f Dockerfile.build . > build_log.txt 2>&1'            }
         }
 
         stage('2. Test') {
             steps {
                 echo 'Uruchamianie testów wewnątrz kontenera...'
-
-                sh 'docker run --rm hiredis-builder make test || echo "Testy wykonane, sprawdz logi powyzej."'
-            }
+                
+                sh 'docker run --rm hiredis-builder make test >> build_log.txt 2>&1 || echo "Testy wykonane, sprawdz logi powyzej."'            }
         }
 
         stage('3. Deploy (Smoke Test)') {
@@ -46,8 +44,7 @@ pipeline {
         always {
             echo 'Zapisywanie logów i sprzątanie po buildzie'
 
-            sh 'docker logs $(docker ps -a -q | head -n 1) > ostatni_log_builda.txt || echo "puste" > ostatni_log_builda.txt'
-            archiveArtifacts artifacts: 'ostatni_log_builda.txt'
+            archiveArtifacts artifacts: 'build_log.txt', allowEmptyArchive: true
             
             sh 'docker image prune -f'
         }
