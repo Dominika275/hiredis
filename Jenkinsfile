@@ -26,18 +26,18 @@ pipeline {
 
         stage('4. Publish (Artefakt)') {
             steps {
-                echo 'Przygotowanie artefaktu do pobrania...'
-
+                echo 'Przygotowanie plików do pobrania...'
+                
                 sh 'docker rm -f temp-container || true'
                 
-                sh 'docker create --name temp-container hiredis-builder'
-
+                sh 'docker create --name temp-container hiredis-img'
+                
                 sh 'docker cp temp-container:/app/libhiredis.so ./libhiredis.so'
                 
                 sh 'docker rm temp-container'
 
-                sh 'tar -cvzf hiredis-artifact.tar.gz libhiredis.so'
-                archiveArtifacts artifacts: 'hiredis-artifact.tar.gz', fingerprint: true
+                sh 'tar -cvzf hiredis-paczka.tar.gz libhiredis.so'
+                archiveArtifacts artifacts: 'hiredis-paczka.tar.gz', fingerprint: true
             }
         }
     }
