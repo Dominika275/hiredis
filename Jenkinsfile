@@ -21,16 +21,15 @@ pipeline {
         stage('3. Deploy (Smoke Test)') {
             steps {
                 echo 'Weryfikacja artefaktu...'
-                sh 'docker run --rm hiredis-builder find /app -name "libhiredis.so"'
-            }
+                sh 'docker run --rm hiredis-builder ls -lh /app/libhiredis.so'            }
         }
 
         stage('4. Publish (Artefakt)') {
             steps {
                 echo 'Przygotowanie artefaktu do pobrania...'
                 sh 'docker create --name temp-container hiredis-builder'
-                
-                sh 'docker cp temp-container:$(docker exec temp-container find /app -name "libhiredis.so") ./libhiredis.so'
+
+                sh 'docker cp temp-container:/app/libhiredis.so ./libhiredis.so'
                 
                 sh 'docker rm temp-container'
 
