@@ -30,7 +30,7 @@ pipeline {
                 
                 sh 'docker rm -f temp-container || true'
                 
-                sh 'docker create --name temp-container hiredis-img'
+                sh 'docker create --name temp-container hiredis-builder'
                 
                 sh 'docker cp temp-container:/app/libhiredis.so ./libhiredis.so'
                 
