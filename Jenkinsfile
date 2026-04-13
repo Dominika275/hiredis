@@ -20,8 +20,8 @@ pipeline {
 
         stage('3. Deploy (Smoke Test)') {
             steps {
-                echo 'Weryfikacja (Smoke Test) w lekkim obrazie Alpine...'
-                sh 'docker run --rm hiredis-builder ls -lh /app/hiredis/libhiredis.so'
+                echo 'Weryfikacja artefaktu...'
+                sh 'docker run --rm hiredis-builder find /app -name "libhiredis.so"'
             }
         }
 
@@ -29,7 +29,9 @@ pipeline {
             steps {
                 echo 'Przygotowanie artefaktu do pobrania...'
                 sh 'docker create --name temp-container hiredis-builder'
-                sh 'docker cp temp-container:/app/hiredis/libhiredis.so ./libhiredis.so'
+                
+                sh 'docker cp temp-container:$(docker exec temp-container find /app -name "libhiredis.so") ./libhiredis.so'
+                
                 sh 'docker rm temp-container'
 
                 sh 'tar -cvzf hiredis-artifact.tar.gz libhiredis.so'
