@@ -27,6 +27,9 @@ pipeline {
         stage('4. Publish (Artefakt)') {
             steps {
                 echo 'Przygotowanie artefaktu do pobrania...'
+
+                sh 'docker rm -f temp-container || true'
+                
                 sh 'docker create --name temp-container hiredis-builder'
 
                 sh 'docker cp temp-container:/app/libhiredis.so ./libhiredis.so'
@@ -41,7 +44,11 @@ pipeline {
     
     post {
         always {
-            echo 'Sprzątanie po buildzie...'
+            echo 'Zapisywanie logów i sprzątanie po buildzie'
+
+            sh 'docker logs $(docker ps -a -q | head -n 1) > ostatni_log_builda.txt || echo "puste" > ostatni_log_builda.txt'
+            archiveArtifacts artifacts: 'ostatni_log_builda.txt'
+            
             sh 'docker image prune -f'
         }
     }
