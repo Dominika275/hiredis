@@ -49,8 +49,7 @@ pipeline {
         stage('4. Deploy (Sandbox Verification)') {
             steps {
                 echo 'Wdrożenie i weryfikacja w środowisku sandboxowym...'
-                sh 'docker run --rm -v $(pwd)/libhiredis.so:/usr/lib/libhiredis.so debian:slim ls -lh /usr/lib/libhiredis.so'
-            }
+                sh 'docker run --rm -v $(pwd)/libhiredis.so:/usr/lib/libhiredis.so debian:bookworm-slim ls -lh /usr/lib/libhiredis.so'            }
         }
 
         stage('5. Publish') {
