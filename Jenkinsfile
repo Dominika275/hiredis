@@ -15,19 +15,21 @@ pipeline {
                 sh 'docker build -t hiredis-bldr -f Dockerfile.build .'
             }
         }
-stage('2. Test') {
-            steps {
-                echo 'Uruchamianie serwera Redis i testów...'
-                sh 'docker run -d --name redis-temp redis:alpine'
-                
-                try {
-                    sh 'docker run --rm --network container:redis-temp hiredis-bldr make test'
-                } finally {
-                    sh 'docker stop redis-temp || true'
-                    sh 'docker rm redis-temp || true'
-                }
-            }
+        stage('2. Test') {
+    steps {
+        echo 'Uruchamianie tymczasowego serwera Redis (Sidecar)...'
+        sh 'docker run -d --name redis-test-server redis:alpine'
+
+        try {
+            echo 'Uruchamianie testów z dostępem do bazy...'
+            sh 'docker run --rm --network container:redis-test-server hiredis-bldr make test'
+        } finally {
+            echo 'Zamykanie serwera Redis...'
+            sh 'docker stop redis-test-server || true'
+            sh 'docker rm redis-test-server || true'
         }
+    }
+}
         stage('3. Prepare Artifact') {
             steps {
                 echo 'Wyciąganie pliku binarnego z obrazu BLDR...'
