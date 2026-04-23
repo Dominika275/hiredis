@@ -17,16 +17,20 @@ pipeline {
         }
         stage('2. Test') {
     steps {
-        echo 'Uruchamianie tymczasowego serwera Redis (Sidecar)...'
-        sh 'docker run -d --name redis-test-server redis:alpine'
-
-        try {
-            echo 'Uruchamianie testów z dostępem do bazy...'
-            sh 'docker run --rm --network container:redis-test-server hiredis-bldr make test'
-        } finally {
-            echo 'Zamykanie serwera Redis...'
-            sh 'docker stop redis-test-server || true'
-            sh 'docker rm redis-test-server || true'
+        echo 'Uruchamianie bazy Redis i testów integracyjnych...'
+        script {
+            sh 'docker run -d --name redis-server redis:alpine'
+            
+            try {
+                sh 'docker run --rm --network container:redis-server hiredis-bldr make test'
+                echo 'Testy zakończone sukcesem!'
+            } catch (Exception e) {
+                echo 'Testy nie powiodły się!'
+                error "Błąd podczas testów: ${e.message}"
+            } finally {
+                sh 'docker stop redis-server || true'
+                sh 'docker rm redis-server || true'
+            }
         }
     }
 }
