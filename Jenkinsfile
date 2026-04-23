@@ -15,14 +15,19 @@ pipeline {
                 sh 'docker build -t hiredis-bldr -f Dockerfile.build .'
             }
         }
-
-        stage('2. Test') {
+stage('2. Test') {
             steps {
-                echo 'Uruchamianie testów jednostkowych...'
-                sh 'docker run --rm hiredis-bldr make test'
+                echo 'Uruchamianie serwera Redis i testów...'
+                sh 'docker run -d --name redis-temp redis:alpine'
+                
+                try {
+                    sh 'docker run --rm --network container:redis-temp hiredis-bldr make test'
+                } finally {
+                    sh 'docker stop redis-temp || true'
+                    sh 'docker rm redis-temp || true'
+                }
             }
         }
-
         stage('3. Prepare Artifact') {
             steps {
                 echo 'Wyciąganie pliku binarnego z obrazu BLDR...'
